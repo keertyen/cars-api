@@ -2,3 +2,5 @@ bin/
 *.out
 coverage.html
 .env
+firebase-debug.log
+firestore-debug.log
