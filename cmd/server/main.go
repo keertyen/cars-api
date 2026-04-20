@@ -36,7 +36,7 @@ func main() {
 	defer c.Close()
 
 	svc := service.New(fs, c, logger)
-	app := api.NewApp(svc, logger, cfg)
+	app := api.NewApp(svc, os.Stdout, cfg)
 
 	go func() {
 		logger.Info("server listening", "port", cfg.Port)

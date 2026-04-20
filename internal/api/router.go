@@ -2,7 +2,7 @@ package api
 
 import (
 	"errors"
-	"log/slog"
+	"io"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -15,7 +15,7 @@ import (
 	"github.com/yenug1k/cars-api/internal/service"
 )
 
-func NewApp(svc service.Service, _ *slog.Logger, cfg *config.Config) *fiber.App {
+func NewApp(svc service.Service, logOutput io.Writer, cfg *config.Config) *fiber.App {
 	app := fiber.New(fiber.Config{
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
@@ -41,8 +41,9 @@ func NewApp(svc service.Service, _ *slog.Logger, cfg *config.Config) *fiber.App 
 	}))
 
 	app.Use(fiberlog.New(fiberlog.Config{
-		Format: `{"time":"${time}","method":"${method}","path":"${path}","status":${status},"latency":"${latency}","ip":"${ip}","request_id":"${locals:requestid}"}` + "\n",
+		Format:     `{"time":"${time}","method":"${method}","path":"${path}","status":${status},"latency":"${latency}","ip":"${ip}","request_id":"${locals:requestid}"}` + "\n",
 		TimeFormat: time.RFC3339,
+		Output:     logOutput,
 	}))
 
 	app.Use(limiter.New(limiter.Config{

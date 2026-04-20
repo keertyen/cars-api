@@ -77,12 +77,12 @@ func (s *CarService) Get(ctx context.Context, id string) (*model.Car, error) {
 func (s *CarService) List(ctx context.Context, q model.ListCarsQuery) (*model.ListCarsResponse, error) {
 	key := fmt.Sprintf("%s%d:%s", cacheListPrefix, q.PageSize, q.PageToken)
 	if v, ok := s.cache.Get(key); ok {
-		return v.(*model.ListCarsResponse), nil
+		return v.(*model.ListCarsResponse), nil //cache hit
 	}
 
 	cars, err := s.store.List(ctx, q)
 	if err != nil {
-		return nil, fmt.Errorf("service.List: %w", err)
+		return nil, fmt.Errorf("service.List: %w", err) //cache miss
 	}
 
 	var nextToken string
@@ -148,7 +148,7 @@ func (s *CarService) Delete(ctx context.Context, id string) error {
 	}
 
 	s.cache.Delete(cacheCarPrefix + id)
-	s.cache.DeletePrefix(cacheListPrefix)
+	s.cache.DeletePrefix(cacheListPrefix) //create, update delete
 
 	s.logger.Info("car deleted", "id", id)
 	return nil

@@ -2,6 +2,15 @@
 
 REST API for managing car listings — CRUD over a collection of cars backed by Firestore, with an in-memory cache layer and cursor-based pagination.
 
+# prompt I gave
+
+"I want to build a Go REST API for car listings — basic CRUD, nothing fancy on the surface but I want the internals done properly.
+Use Fiber and Firestore. I want clean layer separation — handler, service, store — with interfaces so I can mock everything in tests without a real database.
+Add an in-memory cache in front of Firestore. Build it from scratch with sync.RWMutex, I don't want Redis as a dependency for something this simple. Cache individual cars by ID and cache list results separately. When anything gets written, bust all the list cache entries at once.
+Pagination should use Firestore cursors not offset — I don't want it doing a full collection scan just to skip records.
+PUT should behave like PATCH — if a field isn't in the request, leave it alone. Use pointer fields for that.
+For the rest — go-playground/validator for validation, slog for structured JSON logs, testify for assertions. Wrap errors consistently with fmt.Errorf so I can trace where they came from. One sentinel error for not found that everything uses.Docker with a two-stage build, docker-compose that spins up the Firestore emulator automatically. Config from env vars only."
+
 ## Stack
 - **Go 1.22** (enforced via `go` directive in `go.mod` — no `toolchain` pin)
 - **Fiber v2** — HTTP framework

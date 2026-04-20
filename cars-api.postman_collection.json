@@ -13,6 +13,11 @@
       "key": "carId",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "carIds",
+      "value": "[]",
+      "type": "string"
     }
   ],
   "item": [
@@ -46,7 +51,13 @@
               "script": {
                 "exec": [
                   "var json = pm.response.json();",
-                  "if (json.id) { pm.collectionVariables.set('carId', json.id); }"
+                  "if (json.id) {",
+                  "    var ids = JSON.parse(pm.collectionVariables.get('carIds') || '[]');",
+                  "    ids.push(json.id);",
+                  "    pm.collectionVariables.set('carIds', JSON.stringify(ids));",
+                  "    pm.collectionVariables.set('carId', json.id);",
+                  "    console.log('Created car #' + ids.length + ' id=' + json.id);",
+                  "}"
                 ],
                 "type": "text/javascript"
               }
@@ -83,11 +94,34 @@
           "name": "Get car",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/v1/cars/{{carId}}"
+            "url": {
+              "raw": "{{baseUrl}}/v1/cars/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "cars", ":id"],
+              "variable": [
+                { "key": "id", "value": "", "description": "Paste the car ID here" }
+              ]
+            }
           }
         },
         {
           "name": "Update car",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var ids = JSON.parse(pm.collectionVariables.get('carIds') || '[]');",
+                  "if (ids.length === 0) {",
+                  "    throw new Error('carIds is empty — run Create car first.');",
+                  "}",
+                  "pm.collectionVariables.set('carId', ids[ids.length - 1]);",
+                  "console.log('Updating car id=' + ids[ids.length - 1]);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
             "url": "{{baseUrl}}/v1/cars/{{carId}}",
@@ -104,7 +138,14 @@
           "name": "Delete car",
           "request": {
             "method": "DELETE",
-            "url": "{{baseUrl}}/v1/cars/{{carId}}"
+            "url": {
+              "raw": "{{baseUrl}}/v1/cars/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "cars", ":id"],
+              "variable": [
+                { "key": "id", "value": "", "description": "Paste the car ID here" }
+              ]
+            }
           }
         }
       ]
