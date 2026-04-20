@@ -2,9 +2,6 @@ bin/
 *.out
 coverage.html
 .env
-firebase-debug.log
-firestore-debug.log
-firebase-debug.log
-firestore-debug.log
+.claude/
 firebase-debug.log
 firestore-debug.log

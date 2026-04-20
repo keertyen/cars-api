@@ -1,0 +1,113 @@
+{
+  "info": {
+    "name": "cars-api",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "carId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Liveness",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          }
+        },
+        {
+          "name": "Readiness",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/ready"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cars",
+      "item": [
+        {
+          "name": "Create car",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.id) { pm.collectionVariables.set('carId', json.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/v1/cars",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"make\": \"Toyota\",\n  \"model\": \"Camry\",\n  \"year\": 2022,\n  \"color\": \"Silver\",\n  \"price\": 24999.99,\n  \"mileage\": 15000,\n  \"vin\": \"1HGBH41JXMN109186\",\n  \"status\": \"available\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List cars",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/cars?page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "cars"],
+              "query": [
+                { "key": "page_size", "value": "10" },
+                { "key": "page_token", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get car",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/v1/cars/{{carId}}"
+          }
+        },
+        {
+          "name": "Update car",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/v1/cars/{{carId}}",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 22499.99,\n  \"status\": \"pending\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete car",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/v1/cars/{{carId}}"
+          }
+        }
+      ]
+    }
+  ]
+}
