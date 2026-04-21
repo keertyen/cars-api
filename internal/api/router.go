@@ -7,11 +7,9 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
-	"github.com/gofiber/fiber/v2/middleware/limiter"
-	fiberlog "github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/yenug1k/cars-api/config"
+	"github.com/yenug1k/cars-api/internal/api/middleware"
 	"github.com/yenug1k/cars-api/internal/service"
 )
 
@@ -35,34 +33,9 @@ func NewApp(svc service.Service, logOutput io.Writer, cfg *config.Config) *fiber
 	})
 
 	app.Use(requestid.New())
-
-	app.Use(recover.New(recover.Config{
-		EnableStackTrace: true,
-	}))
-
-	app.Use(fiberlog.New(fiberlog.Config{
-		Format:     `{"time":"${time}","method":"${method}","path":"${path}","status":${status},"latency":"${latency}","ip":"${ip}","request_id":"${locals:requestid}"}` + "\n",
-		TimeFormat: time.RFC3339,
-		Output:     logOutput,
-	}))
-
-	app.Use(limiter.New(limiter.Config{
-		Max:        cfg.RateLimitBurst,
-		Expiration: time.Second,
-		KeyGenerator: func(c *fiber.Ctx) string {
-			if ip := c.Get("X-Forwarded-For"); ip != "" {
-				return ip
-			}
-			return c.IP()
-		},
-		LimitReached: func(c *fiber.Ctx) error {
-			return c.Status(fiber.StatusTooManyRequests).JSON(ErrorResponse{
-				Error:   "rate limit exceeded",
-				TraceID: traceID(c),
-			})
-		},
-	}))
-
+	app.Use(middleware.NewRecovery())
+	app.Use(middleware.NewLogger(logOutput))
+	app.Use(middleware.NewRateLimiter(cfg))
 	app.Use(compress.New())
 
 	h := NewHandler(svc)
